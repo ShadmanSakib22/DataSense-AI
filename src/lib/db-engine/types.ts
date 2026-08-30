@@ -51,3 +51,20 @@ export interface ResultPayload {
 export interface ExportedPayload {
   bytes: Uint8Array;
 }
+
+export interface ColumnInfo {
+  name: string;
+  type: string;
+  notnull: number;
+  pk: number;
+}
+
+export interface TableSchema {
+  name: string;
+  columns: ColumnInfo[];
+  rowCount: number;
+}
+
+export interface SchemaInfo {
+  tables: TableSchema[];
+}
