@@ -3,6 +3,7 @@ import type { GuardrailRule } from '../types';
 export const schemaCheck: GuardrailRule = (ast, _sql, schema) => {
   const reasons: string[] = [];
   const tableNames = new Set(schema.tables.map(t => t.name.toLowerCase()));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const astObj = ast as Record<string, any>;
 
   const fromTables: Array<{ table?: string }> = [];

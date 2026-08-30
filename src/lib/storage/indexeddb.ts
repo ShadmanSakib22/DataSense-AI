@@ -3,7 +3,7 @@ import { openDB, type IDBPDatabase } from 'idb';
 const DB_NAME = 'datasense-ai';
 const DB_VERSION = 1;
 
-interface DatasenseDB {
+export interface DatasenseDB {
   datasets: {
     key: string;
     value: {

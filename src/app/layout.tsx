@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description: "Upload CSV, Excel, or SQLite files. Ask questions in plain English. Get interactive charts. Your data never leaves your browser.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

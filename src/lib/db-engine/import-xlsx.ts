@@ -22,7 +22,7 @@ export async function parseXlsxFile(file: File): Promise<ParseResult[]> {
 
   const results: ParseResult[] = [];
 
-  for (const sheetName of workbook.Sheets) {
+  for (const sheetName of Object.keys(workbook.Sheets)) {
     const sheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
       defval: null,

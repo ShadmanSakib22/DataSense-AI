@@ -30,7 +30,7 @@ export default function WorkspacePage() {
   const [verdict, setVerdict] = useState<GuardrailVerdict | null>(null);
   const [resultColumns, setResultColumns] = useState<string[]>([]);
   const [resultRows, setResultRows] = useState<unknown[][]>([]);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<{ id: number; question: string; sql: string; verdict: GuardrailVerdict; rowCount: number; timestamp: number }[]>([]);
   const [llmProvider, setLlmProvider] = useState<LLMProvider | null>(null);
   const [activeProvider, setActiveProvider] = useState<LLMProviderName | null>(null);
   const [chartType, setChartType] = useState<ChartType>('bar');

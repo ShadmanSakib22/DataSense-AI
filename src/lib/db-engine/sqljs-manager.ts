@@ -1,7 +1,7 @@
 import type { WorkerRequest, WorkerResponse } from './types';
 
 let worker: Worker | null = null;
-let messageQueue: Map<string, {
+const messageQueue: Map<string, {
   resolve: (value: WorkerResponse) => void;
   reject: (reason: unknown) => void;
 }> = new Map();

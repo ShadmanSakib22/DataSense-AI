@@ -1,5 +1,3 @@
-/// <reference lib="webworker" />
-
 import initSqlJs, { type Database } from 'sql.js';
 import type {
   WorkerRequest,
@@ -9,9 +7,11 @@ import type {
   ImportCsvPayload,
   ImportXlsxPayload,
   ExecPayload,
+  SchemaPayload,
+  TableSchema,
 } from '../db-engine/types';
 
-const ctx = self as unknown as WorkerScope;
+const ctx = self as unknown as DedicatedWorkerGlobalScope;
 let db: Database | null = null;
 
 const respond = (resp: WorkerResponse) => ctx.postMessage(resp);
@@ -24,18 +24,18 @@ async function initDb(): Promise<void> {
   db = new SQL.Database();
 }
 
-function getSchema(): WorkerResponse['payload'] {
+function getSchema(): SchemaPayload {
   if (!db) return { tables: [] };
 
   const tablesResult = db.exec("SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-  const tables: WorkerResponse['payload'] extends { tables: infer T } ? T : never = [];
+  const tables: TableSchema[] = [];
 
   if (tablesResult.length > 0) {
     for (const row of tablesResult[0].values) {
       const tableName = row[0] as string;
       const pragmaResult = db.exec(`PRAGMA table_info("${tableName}")`);
       const columns = pragmaResult.length > 0
-        ? pragmaResult[0].values.map(col => ({
+        ? pragmaResult[0].values.map((col: unknown[]) => ({
             name: col[1] as string,
             type: col[2] as string,
             notnull: col[3] as number,
