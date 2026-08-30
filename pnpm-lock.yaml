@@ -50,6 +50,9 @@ importers:
       shadcn:
         specifier: ^4.19.0
         version: 4.19.0(supports-color@7.2.0)(typescript@5.9.3)
+      sql-guardrails:
+        specifier: workspace:*
+        version: link:packages/sql-guardrails
       sql.js:
         specifier: ^1.14.2
         version: 1.14.2
