@@ -68,3 +68,15 @@ export interface TableSchema {
 export interface SchemaInfo {
   tables: TableSchema[];
 }
+
+export interface GuardrailVerdict {
+  safe: boolean;
+  reasons: string[];
+  sanitizedSql: string;
+}
+
+export type GuardrailRule = (
+  ast: unknown,
+  sql: string,
+  schema: SchemaInfo
+) => string[];
