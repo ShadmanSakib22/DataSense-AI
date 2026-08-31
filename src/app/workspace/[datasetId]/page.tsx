@@ -56,6 +56,7 @@ export default function WorkspacePage() {
   const datasetId = params.datasetId as string;
 
   const [schema, setSchema] = useState<SchemaInfo>({ tables: [] });
+  const [isDatasetLoading, setIsDatasetLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedSql, setGeneratedSql] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<GuardrailVerdict | null>(null);
@@ -85,29 +86,33 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     async function load() {
-      initWorker();
+      try {
+        initWorker();
 
-      const dataset = await loadDataset(datasetId);
-      if (dataset) {
-        await sendMessage("init-bytes", { bytes: dataset.dbBytes });
-        const schemaResponse = await sendMessage("schema", null);
-        if (schemaResponse.type === "schema") {
-          setSchema(schemaResponse.payload as SchemaInfo);
+        const dataset = await loadDataset(datasetId);
+        if (dataset) {
+          await sendMessage("init-bytes", { bytes: dataset.dbBytes });
+          const schemaResponse = await sendMessage("schema", null);
+          if (schemaResponse.type === "schema") {
+            setSchema(schemaResponse.payload as SchemaInfo);
+          }
         }
-      }
 
-      const hist = await loadQueryHistory(datasetId);
-      setHistory(hist);
+        const hist = await loadQueryHistory(datasetId);
+        setHistory(hist);
 
-      // Restore API key from localStorage
-      const savedGeminiKey = localStorage.getItem("llm_key_gemini");
-      const savedGroqKey = localStorage.getItem("llm_key_groq");
-      if (savedGeminiKey) {
-        setLlmProvider(new GeminiProvider(savedGeminiKey));
-        setActiveProvider("gemini");
-      } else if (savedGroqKey) {
-        setLlmProvider(new GroqProvider(savedGroqKey));
-        setActiveProvider("groq");
+        // Restore API key from localStorage
+        const savedGeminiKey = localStorage.getItem("llm_key_gemini");
+        const savedGroqKey = localStorage.getItem("llm_key_groq");
+        if (savedGeminiKey) {
+          setLlmProvider(new GeminiProvider(savedGeminiKey));
+          setActiveProvider("gemini");
+        } else if (savedGroqKey) {
+          setLlmProvider(new GroqProvider(savedGroqKey));
+          setActiveProvider("groq");
+        }
+      } finally {
+        setIsDatasetLoading(false);
       }
     }
     load();
@@ -293,106 +298,127 @@ export default function WorkspacePage() {
     <div className="flex min-h-screen flex-col">
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-4xl space-y-6">
-          <QueryConsole
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            generatedSql={generatedSql}
-            verdict={verdict}
-            resultColumns={resultColumns}
-            resultRows={resultRows}
-            question={lastQuestion}
-            llmResponse={llmResponse}
-            activeProvider={activeProvider}
-            headerActions={
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 text-muted-foreground hover:text-foreground"
-                      onClick={() => setDataOpen(true)}
-                    >
-                      <History className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>History & Data</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 text-muted-foreground hover:text-foreground"
-                      onClick={() => setSchemaOpen(true)}
-                    >
-                      <Database className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Table details</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 text-muted-foreground hover:text-foreground"
-                      onClick={() => setAiOpen(true)}
-                    >
-                      <Brain className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>AI & API Key</TooltipContent>
-                </Tooltip>
-              </>
-            }
-          />
-
-          {resultColumns.length > 0 && chartData.length > 0 && (
-            <div className="space-y-4 rounded-xl border bg-card/50 p-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Visualization</h3>
-                <ChartTypePicker
-                  value={chartType}
-                  eligibleTypes={eligibleTypes}
-                  onChange={setChartType}
-                />
+          {isDatasetLoading ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border bg-card/50 p-4">
+                <div className="space-y-3">
+                  <div className="h-20 animate-pulse rounded-md bg-muted/50" />
+                  <div className="flex justify-end border-t pt-3">
+                    <div className="h-9 w-24 animate-pulse rounded-md bg-muted/50" />
+                  </div>
+                </div>
               </div>
-              {chartType === "bar" && (
-                <ChartBar
-                  data={chartData}
-                  xKey={resultColumns[0]}
-                  yKeys={resultColumns.slice(1)}
-                  config={chartConfig}
-                />
-              )}
-              {chartType === "line" && (
-                <ChartLine
-                  data={chartData}
-                  xKey={resultColumns[0]}
-                  yKeys={resultColumns.slice(1)}
-                  config={chartConfig}
-                />
-              )}
-              {chartType === "area" && (
-                <ChartArea
-                  data={chartData}
-                  xKey={resultColumns[0]}
-                  yKeys={resultColumns.slice(1)}
-                  config={chartConfig}
-                />
-              )}
-              {chartType === "pie" && (
-                <ChartPie data={chartData} config={chartConfig} />
-              )}
-              {chartType === "radar" && (
-                <ChartRadar
-                  data={chartData}
-                  yKeys={resultColumns.slice(1)}
-                  config={chartConfig}
-                />
-              )}
+              <div className="rounded-xl border bg-card/50 p-6">
+                <div className="space-y-3">
+                  <div className="h-4 w-32 animate-pulse rounded bg-muted/50" />
+                  <div className="h-64 animate-pulse rounded-lg bg-muted/30" />
+                </div>
+              </div>
             </div>
+          ) : (
+            <>
+              <QueryConsole
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                generatedSql={generatedSql}
+                verdict={verdict}
+                resultColumns={resultColumns}
+                resultRows={resultRows}
+                question={lastQuestion}
+                llmResponse={llmResponse}
+                activeProvider={activeProvider}
+                headerActions={
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 text-muted-foreground hover:text-foreground"
+                          onClick={() => setDataOpen(true)}
+                        >
+                          <History className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>History & Data</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 text-muted-foreground hover:text-foreground"
+                          onClick={() => setSchemaOpen(true)}
+                        >
+                          <Database className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Table details</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 text-muted-foreground hover:text-foreground"
+                          onClick={() => setAiOpen(true)}
+                        >
+                          <Brain className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>AI & API Key</TooltipContent>
+                    </Tooltip>
+                  </>
+                }
+              />
+
+              {resultColumns.length > 0 && chartData.length > 0 && (
+                <div className="space-y-4 rounded-xl border bg-card/50 p-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">Visualization</h3>
+                    <ChartTypePicker
+                      value={chartType}
+                      eligibleTypes={eligibleTypes}
+                      onChange={setChartType}
+                    />
+                  </div>
+                  {chartType === "bar" && (
+                    <ChartBar
+                      data={chartData}
+                      xKey={resultColumns[0]}
+                      yKeys={resultColumns.slice(1)}
+                      config={chartConfig}
+                    />
+                  )}
+                  {chartType === "line" && (
+                    <ChartLine
+                      data={chartData}
+                      xKey={resultColumns[0]}
+                      yKeys={resultColumns.slice(1)}
+                      config={chartConfig}
+                    />
+                  )}
+                  {chartType === "area" && (
+                    <ChartArea
+                      data={chartData}
+                      xKey={resultColumns[0]}
+                      yKeys={resultColumns.slice(1)}
+                      config={chartConfig}
+                    />
+                  )}
+                  {chartType === "pie" && (
+                    <ChartPie data={chartData} config={chartConfig} />
+                  )}
+                  {chartType === "radar" && (
+                    <ChartRadar
+                      data={chartData}
+                      yKeys={resultColumns.slice(1)}
+                      config={chartConfig}
+                    />
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

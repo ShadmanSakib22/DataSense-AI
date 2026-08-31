@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { FileUpload } from '@/components/upload/file-upload';
 import { UploadProgress } from '@/components/upload/upload-progress';
 import { sendMessage, initWorker } from '@/lib/db-engine/sqljs-manager';
@@ -145,33 +144,32 @@ export default function WorkspaceIndexPage() {
               </div>
               <div className="space-y-2">
                 {datasets.map(dataset => (
-                  <Card key={dataset.id} className="cursor-pointer transition-colors hover:border-primary/50">
-                    <CardContent className="flex items-center justify-between p-4">
-                      <button
-                        onClick={() => router.push(`/workspace/${dataset.id}`)}
-                        className="flex items-center gap-3 text-left"
-                      >
-                        <Database className="size-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{dataset.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(dataset.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-muted-foreground hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(dataset.id);
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <button
+                    key={dataset.id}
+                    onClick={() => router.push(`/workspace/${dataset.id}`)}
+                    className="flex w-full items-center justify-between rounded-xl border bg-card/50 p-4 text-left transition-colors hover:border-primary/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Database className="size-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{dataset.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(dataset.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      role="button"
+                      tabIndex={-1}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(dataset.id);
+                      }}
+                      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-destructive"
+                    >
+                      <Trash2 className="size-4" />
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
