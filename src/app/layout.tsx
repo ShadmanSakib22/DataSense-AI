@@ -3,6 +3,7 @@ import { Geist_Mono, JetBrains_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SiteHeader from "@/components/layout/site-header";
 import SiteFooter from "@/components/layout/site-footer";
+import { BackToTop } from "@/components/layout/back-to-top";
 import "./globals.css";
 
 const fontSans = Geist_Mono({
@@ -32,10 +33,12 @@ export default function RootLayout({
       className={`${fontSans.variable} ${fontMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <div id="top" />
         <TooltipProvider>
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />
+          <BackToTop />
         </TooltipProvider>
       </body>
     </html>

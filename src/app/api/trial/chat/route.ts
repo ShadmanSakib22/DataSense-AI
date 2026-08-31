@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { messages, model = 'llama-3.3-70b-versatile' } = body;
+  const { messages, model = 'openai/gpt-oss-120b' } = body;
 
   if (!messages || !Array.isArray(messages)) {
     return Response.json({ error: 'Invalid request: messages array required' }, { status: 400 });

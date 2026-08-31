@@ -9,7 +9,9 @@ export class GroqProvider implements LLMProvider {
   }
 
   async chat(messages: LLMMessage[], options?: LLMCompletionOptions): Promise<string> {
-    const model = options?.model || 'llama-3.3-70b-versatile';
+    const model = options?.model || 'openai/gpt-oss-120b';
+
+    console.log('[groq] chat request:', { model, messageCount: messages.length });
 
     const res = await fetch('/api/proxy', {
       method: 'POST',
@@ -29,15 +31,17 @@ export class GroqProvider implements LLMProvider {
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
+      console.error('[groq] API error:', res.status, error);
       throw new Error(`Groq API error: ${res.status} ${JSON.stringify(error)}`);
     }
 
     const data = await res.json();
+    console.log('[groq] response received');
     return data.choices?.[0]?.message?.content || '';
   }
 
   async *streamChat(messages: LLMMessage[], options?: LLMCompletionOptions): AsyncGenerator<string> {
-    const model = options?.model || 'llama-3.3-70b-versatile';
+    const model = options?.model || 'openai/gpt-oss-120b';
 
     const res = await fetch('/api/proxy', {
       method: 'POST',
@@ -89,6 +93,6 @@ export class GroqProvider implements LLMProvider {
   }
 
   async listModels(): Promise<string[]> {
-    return ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
+    return ['openai/gpt-oss-120b', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
   }
 }

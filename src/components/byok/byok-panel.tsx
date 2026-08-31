@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Eye, EyeOff, Key, Trash2 } from 'lucide-react';
-import type { LLMProviderName } from '@/lib/llm/types';
+} from "@/components/ui/select";
+import { Eye, EyeOff, Key, Trash2 } from "lucide-react";
+import type { LLMProviderName } from "@/lib/llm/types";
 
 interface BYOKPanelProps {
   onKeySet: (provider: LLMProviderName, key: string) => void;
@@ -19,15 +19,19 @@ interface BYOKPanelProps {
   activeProvider: LLMProviderName | null;
 }
 
-export function BYOKPanel({ onKeySet, onKeyClear, activeProvider }: BYOKPanelProps) {
-  const [provider, setProvider] = useState<LLMProviderName>('gemini');
-  const [key, setKey] = useState('');
+export function BYOKPanel({
+  onKeySet,
+  onKeyClear,
+  activeProvider,
+}: BYOKPanelProps) {
+  const [provider, setProvider] = useState<LLMProviderName>("gemini");
+  const [key, setKey] = useState("");
   const [showKey, setShowKey] = useState(false);
 
   const handleSave = useCallback(() => {
     if (key.trim()) {
       onKeySet(provider, key.trim());
-      setKey('');
+      setKey("");
     }
   }, [key, provider, onKeySet]);
 
@@ -41,7 +45,10 @@ export function BYOKPanel({ onKeySet, onKeyClear, activeProvider }: BYOKPanelPro
       </div>
 
       <div className="space-y-2">
-        <Select value={provider} onValueChange={(v) => setProvider(v as LLMProviderName)}>
+        <Select
+          value={provider}
+          onValueChange={(v) => setProvider(v as LLMProviderName)}
+        >
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -54,9 +61,9 @@ export function BYOKPanel({ onKeySet, onKeyClear, activeProvider }: BYOKPanelPro
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
-              type={showKey ? 'text' : 'password'}
+              type={showKey ? "text" : "password"}
               value={key}
-              onChange={e => setKey(e.target.value)}
+              onChange={(e) => setKey(e.target.value)}
               placeholder="Paste your API key..."
               className="pr-9"
             />
@@ -65,10 +72,14 @@ export function BYOKPanel({ onKeySet, onKeyClear, activeProvider }: BYOKPanelPro
               onClick={() => setShowKey(!showKey)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {showKey ? (
+                <EyeOff className="size-4" />
+              ) : (
+                <Eye className="size-4" />
+              )}
             </button>
           </div>
-          <Button onClick={handleSave} disabled={!key.trim()} size="sm">
+          <Button onClick={handleSave} disabled={!key.trim()}>
             Save
           </Button>
         </div>
@@ -77,7 +88,8 @@ export function BYOKPanel({ onKeySet, onKeyClear, activeProvider }: BYOKPanelPro
       {activeProvider && (
         <div className="flex items-center justify-between rounded-md bg-muted/30 px-3 py-2">
           <span className="text-xs">
-            Active: <span className="font-medium capitalize">{activeProvider}</span>
+            Active:{" "}
+            <span className="font-medium capitalize">{activeProvider}</span>
           </span>
           <Button
             variant="ghost"
@@ -91,7 +103,8 @@ export function BYOKPanel({ onKeySet, onKeyClear, activeProvider }: BYOKPanelPro
       )}
 
       <p className="text-xs text-muted-foreground">
-        Your key is stored in sessionStorage (gone when tab closes). No server sees it.
+        Your key is stored in localStorage (persists across sessions). <br /> No
+        server sees it.
       </p>
     </div>
   );

@@ -92,7 +92,6 @@ export async function saveQueryHistory(entry: {
   const db = await getDb();
   return db.add('queryHistory', {
     ...entry,
-    id: 0,
     timestamp: Date.now(),
   }) as Promise<number>;
 }
@@ -100,4 +99,26 @@ export async function saveQueryHistory(entry: {
 export async function loadQueryHistory(datasetId: string) {
   const db = await getDb();
   return db.getAllFromIndex('queryHistory', 'by-dataset', datasetId);
+}
+
+export async function clearQueryHistory(datasetId: string): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction('queryHistory', 'readwrite');
+  const index = tx.store.index('by-dataset');
+  let cursor = await index.openCursor(datasetId);
+  while (cursor) {
+    cursor.delete();
+    cursor = await cursor.continue();
+  }
+  await tx.done;
+}
+
+export async function clearAllData(): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction(['datasets', 'queryHistory'], 'readwrite');
+  await Promise.all([
+    tx.objectStore('datasets').clear(),
+    tx.objectStore('queryHistory').clear(),
+    tx.done,
+  ]);
 }

@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Play, Shield, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { Loader2, Sparkles, Shield, ShieldAlert, AlertTriangle, Plus } from 'lucide-react';
 import { ResultTable } from './result-table';
 import type { GuardrailVerdict } from '@/lib/db-engine/types';
 
 interface QueryConsoleProps {
   onSubmit: (question: string) => void;
+  onNewChat: () => void;
   isLoading: boolean;
   generatedSql: string | null;
   verdict: GuardrailVerdict | null;
@@ -22,6 +23,7 @@ interface QueryConsoleProps {
 
 export function QueryConsole({
   onSubmit,
+  onNewChat,
   isLoading,
   generatedSql,
   verdict,
@@ -37,20 +39,24 @@ export function QueryConsole({
       e.preventDefault();
       if (question.trim()) {
         onSubmit(question.trim());
+        setQuestion('');
       }
     },
     [question, onSubmit]
   );
 
+  const hasResult = generatedSql !== null;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <form onSubmit={handleSubmit} className="flex-1 space-y-3">
+      <div className="rounded-xl border bg-card/50 p-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <Textarea
             value={question}
             onChange={e => setQuestion(e.target.value)}
             placeholder="Ask a question about your data..."
-            className="min-h-[80px] resize-none"
+            className="min-h-[80px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            disabled={hasResult || isLoading}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -58,16 +64,36 @@ export function QueryConsole({
               }
             }}
           />
-          <Button type="submit" disabled={isLoading || !question.trim()} className="gap-2">
-            {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
-            {isLoading ? 'Thinking...' : 'Ask'}
-          </Button>
-        </form>
-        {headerActions && (
-          <div className="ml-3 flex items-center gap-1">
-            {headerActions}
+          <div className="flex items-center justify-between gap-2 border-t pt-3">
+            <div className="flex items-center gap-1">
+              {headerActions}
+            </div>
+            {!hasResult ? (
+              <Button
+                type="submit"
+                disabled={isLoading || !question.trim()}
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {isLoading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {isLoading ? 'Thinking...' : 'Ask'}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={onNewChat}
+                variant="outline"
+                className="gap-2"
+              >
+                <Plus className="size-4" />
+                New Chat
+              </Button>
+            )}
           </div>
-        )}
+        </form>
       </div>
 
       {generatedSql && (
@@ -109,7 +135,7 @@ export function QueryConsole({
 
           {verdict?.safe && (
             <Button onClick={onRunQuery} variant="outline" size="sm" className="gap-2">
-              <Play className="size-3" />
+              <Sparkles className="size-3" />
               Run Query
             </Button>
           )}

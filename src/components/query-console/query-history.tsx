@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, RotateCcw } from 'lucide-react';
+import { Clock, RotateCcw, Trash2 } from 'lucide-react';
 import type { GuardrailVerdict } from '@/lib/db-engine/types';
 
 interface HistoryEntry {
@@ -15,23 +15,45 @@ interface HistoryEntry {
 interface QueryHistoryProps {
   entries: HistoryEntry[];
   onSelect: (sql: string) => void;
+  onClear?: () => void;
 }
 
-export function QueryHistory({ entries, onSelect }: QueryHistoryProps) {
+export function QueryHistory({ entries, onSelect, onClear }: QueryHistoryProps) {
   if (entries.length === 0) {
-    return null;
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5">
+          <Clock className="size-3.5 text-muted-foreground" />
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recent Queries
+          </h3>
+        </div>
+        <p className="text-xs text-muted-foreground">No queries yet.</p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-1.5">
-        <Clock className="size-3.5 text-muted-foreground" />
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Recent Queries
-        </h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Clock className="size-3.5 text-muted-foreground" />
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recent Queries
+          </h3>
+        </div>
+        {onClear && (
+          <button
+            onClick={onClear}
+            className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive"
+          >
+            <Trash2 className="size-3" />
+            Clear
+          </button>
+        )}
       </div>
       <div className="space-y-1">
-        {entries.slice(0, 10).map(entry => (
+        {entries.map(entry => (
           <button
             key={entry.id}
             onClick={() => onSelect(entry.sql)}
