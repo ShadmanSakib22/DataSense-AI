@@ -1,20 +1,35 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { FileUpload } from '@/components/upload/file-upload';
 import { UploadProgress } from '@/components/upload/upload-progress';
 import { sendMessage, initWorker } from '@/lib/db-engine/sqljs-manager';
 import { parseCsvFile } from '@/lib/db-engine/import-csv';
 import { parseXlsxFile } from '@/lib/db-engine/import-xlsx';
-import { saveDataset } from '@/lib/storage/indexeddb';
-import { AlertTriangle } from 'lucide-react';
+import { saveDataset, listDatasets, deleteDataset } from '@/lib/storage/indexeddb';
+import { AlertTriangle, Database, Trash2 } from 'lucide-react';
+
+interface Dataset {
+  id: string;
+  name: string;
+  createdAt: number;
+}
 
 export default function WorkspaceIndexPage() {
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | undefined>();
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+
+  useEffect(() => {
+    listDatasets().then(items =>
+      setDatasets(items.map(d => ({ id: d.id, name: d.name, createdAt: d.createdAt })))
+    );
+  }, []);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -91,6 +106,11 @@ export default function WorkspaceIndexPage() {
     [router]
   );
 
+  const handleDelete = useCallback(async (id: string) => {
+    await deleteDataset(id);
+    setDatasets(prev => prev.filter(d => d.id !== id));
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center p-6">
@@ -98,9 +118,46 @@ export default function WorkspaceIndexPage() {
           <Alert>
             <AlertTriangle className="size-4" />
             <AlertDescription>
-              No dataset loaded. Upload a file to get started.
+              No dataset loaded. Upload a file or select an existing session below.
             </AlertDescription>
           </Alert>
+
+          {datasets.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-muted-foreground">Existing Sessions</h3>
+              <div className="space-y-2">
+                {datasets.map(dataset => (
+                  <Card key={dataset.id} className="cursor-pointer transition-colors hover:border-primary/50">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <button
+                        onClick={() => router.push(`/workspace/${dataset.id}`)}
+                        className="flex items-center gap-3 text-left"
+                      >
+                        <Database className="size-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">{dataset.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(dataset.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(dataset.id);
+                        }}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
           {status ? (
             <UploadProgress status={status} progress={progress} />
