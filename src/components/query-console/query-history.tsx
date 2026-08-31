@@ -51,11 +51,7 @@ export function QueryHistory({ entries, onSelect, onClear }: QueryHistoryProps) 
               <RotateCcw className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <p className="truncate">{entry.question}</p>
-                <p className="truncate font-mono text-muted-foreground">{entry.sql}</p>
               </div>
-              <span className="shrink-0 text-muted-foreground">
-                {entry.rowCount} rows
-              </span>
             </button>
           ))}
         </div>

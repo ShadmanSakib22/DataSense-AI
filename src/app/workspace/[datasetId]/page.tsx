@@ -181,6 +181,8 @@ export default function WorkspacePage() {
         const v = validateSql(sql, schema);
         setVerdict(v);
 
+        let executedRowCount = 0;
+
         if (v.safe) {
           const result = await sendMessage("exec", { sql: v.sanitizedSql });
           if (result.type === "result") {
@@ -191,6 +193,7 @@ export default function WorkspacePage() {
             };
             setResultColumns(payload.columns);
             setResultRows(payload.rows);
+            executedRowCount = payload.rows.length;
             setChartType(suggestChartType(payload.columns, payload.rows));
           }
         }
@@ -200,7 +203,7 @@ export default function WorkspacePage() {
           question,
           sql,
           verdict: v,
-          rowCount: resultRows.length,
+          rowCount: executedRowCount,
         });
 
         const hist = await loadQueryHistory(datasetId);
@@ -401,13 +404,13 @@ export default function WorkspacePage() {
       {/* History & Data modal */}
       <Sheet open={dataOpen} onOpenChange={setDataOpen}>
         <SheetContent
-          className="w-full lg:w-1/2 p-0"
+          className="w-full lg:w-1/2 p-0 flex flex-col"
           showCloseButton={false}
         >
-          <SheetHeader className="border-b px-6 py-4">
+          <SheetHeader className="border-b px-6 py-4 shrink-0">
             <SheetTitle>History & Data</SheetTitle>
           </SheetHeader>
-          <ScrollArea className="h-[calc(100dvh-4rem)]">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="p-6">
               <Tabs defaultValue="history">
                 <TabsList className="w-full">
@@ -420,14 +423,14 @@ export default function WorkspacePage() {
                     Data
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="history" className="mt-4 max-h-[60vh] overflow-y-auto">
+                <TabsContent value="history" className="mt-4">
                   <QueryHistory
                     entries={history}
                     onSelect={handleSelectHistory}
                     onClear={handleClearHistory}
                   />
                 </TabsContent>
-                <TabsContent value="data" className="mt-4 max-h-[60vh] overflow-y-auto">
+                <TabsContent value="data" className="mt-4">
                   <div className="space-y-4">
                     <div className="rounded-md border p-4">
                       <h4 className="text-sm font-medium">Dataset Actions</h4>

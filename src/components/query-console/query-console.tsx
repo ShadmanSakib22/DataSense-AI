@@ -12,6 +12,8 @@ import {
   ShieldAlert,
   AlertTriangle,
   Plus,
+  Copy,
+  Check,
 } from "lucide-react";
 import { ResultTable } from "./result-table";
 import type { GuardrailVerdict } from "@/lib/db-engine/types";
@@ -40,6 +42,15 @@ export function QueryConsole({
   headerActions,
 }: QueryConsoleProps) {
   const [question, setQuestion] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopySql = useCallback(() => {
+    if (generatedSql) {
+      navigator.clipboard.writeText(generatedSql);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [generatedSql]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -121,8 +132,16 @@ export function QueryConsole({
                 Blocked
               </Badge>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto size-7 text-muted-foreground hover:text-foreground"
+              onClick={handleCopySql}
+            >
+              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+            </Button>
           </div>
-          <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed">
+          <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
             {generatedSql}
           </pre>
 
