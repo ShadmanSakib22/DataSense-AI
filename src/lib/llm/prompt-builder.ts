@@ -19,7 +19,10 @@ Rules:
 - Use table and column names exactly as provided in the schema
 - Do not use semicolons
 - Do not use DELETE, INSERT, UPDATE, DROP, CREATE, ALTER, or TRUNCATE
+- Do not use CROSS JOIN — use explicit subqueries or WHERE clauses instead
+- Keep queries simple: avoid deeply nested subqueries when possible
 - If the question cannot be answered with a SELECT query, explain why instead of writing SQL
+- When explaining, NEVER start with SQL keywords like SELECT, WITH, INSERT, etc — start with a plain sentence like "I cannot answer this because..."
 
 Schema:
 ${schemaDescription}

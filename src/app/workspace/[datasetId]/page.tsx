@@ -7,6 +7,7 @@ import {
   loadDataset,
   loadQueryHistory,
   saveQueryHistory,
+  deleteQueryHistoryEntry,
   clearQueryHistory,
   clearAllData,
   deleteDataset,
@@ -56,6 +57,8 @@ export default function WorkspacePage() {
   const [verdict, setVerdict] = useState<GuardrailVerdict | null>(null);
   const [resultColumns, setResultColumns] = useState<string[]>([]);
   const [resultRows, setResultRows] = useState<unknown[][]>([]);
+  const [lastQuestion, setLastQuestion] = useState("");
+  const [llmResponse, setLlmResponse] = useState<string | null>(null);
   const [history, setHistory] = useState<
     {
       id: number;
@@ -125,6 +128,11 @@ export default function WorkspacePage() {
     setHistory([]);
   }, [datasetId]);
 
+  const handleDeleteHistoryEntry = useCallback(async (id: number) => {
+    await deleteQueryHistoryEntry(id);
+    setHistory(prev => prev.filter(entry => entry.id !== id));
+  }, []);
+
   const handleDeleteDataset = useCallback(async () => {
     if (confirm("Delete this dataset? This cannot be undone.")) {
       await deleteDataset(datasetId);
@@ -153,10 +161,12 @@ export default function WorkspacePage() {
       }
 
       setIsLoading(true);
+      setLastQuestion(question);
       setGeneratedSql(null);
       setVerdict(null);
       setResultColumns([]);
       setResultRows([]);
+      setLlmResponse(null);
 
       try {
         const { system, user } = buildSchemaGroundedPrompt(question, schema);
@@ -167,12 +177,7 @@ export default function WorkspacePage() {
 
         const sql = extractSql(response);
         if (!sql) {
-          setGeneratedSql(null);
-          setVerdict({
-            safe: false,
-            reasons: ["Could not extract SQL from the response."],
-            sanitizedSql: "",
-          });
+          setLlmResponse(response);
           return;
         }
 
@@ -219,27 +224,12 @@ export default function WorkspacePage() {
         setIsLoading(false);
       }
     },
-    [llmProvider, schema, datasetId, resultRows.length],
+    [llmProvider, schema, datasetId],
   );
 
-  const handleRunQuery = useCallback(async () => {
-    if (!verdict?.safe || !verdict.sanitizedSql) return;
-
-    const result = await sendMessage("exec", { sql: verdict.sanitizedSql });
-    if (result.type === "result") {
-      const payload = result.payload as {
-        columns: string[];
-        rows: unknown[][];
-        rowCount: number;
-      };
-      setResultColumns(payload.columns);
-      setResultRows(payload.rows);
-      setChartType(suggestChartType(payload.columns, payload.rows));
-    }
-  }, [verdict]);
-
-  const handleSelectHistory = useCallback(async (sql: string) => {
+  const handleSelectHistory = useCallback(async (question: string, sql: string) => {
     setIsLoading(true);
+    setLastQuestion(question);
     setGeneratedSql(sql);
     setResultColumns([]);
     setResultRows([]);
@@ -272,13 +262,6 @@ export default function WorkspacePage() {
     }
   }, [schema]);
 
-  const handleNewChat = useCallback(() => {
-    setGeneratedSql(null);
-    setVerdict(null);
-    setResultColumns([]);
-    setResultRows([]);
-  }, []);
-
   const chartData = prepareChartData(resultColumns, resultRows, chartType);
 
   const chartConfig: ChartConfig = resultColumns
@@ -294,13 +277,13 @@ export default function WorkspacePage() {
         <div className="mx-auto max-w-4xl space-y-6">
           <QueryConsole
             onSubmit={handleSubmit}
-            onNewChat={handleNewChat}
             isLoading={isLoading}
             generatedSql={generatedSql}
             verdict={verdict}
             resultColumns={resultColumns}
             resultRows={resultRows}
-            onRunQuery={handleRunQuery}
+            question={lastQuestion}
+            llmResponse={llmResponse}
             headerActions={
               <>
                 <Tooltip>
@@ -427,6 +410,7 @@ export default function WorkspacePage() {
                   <QueryHistory
                     entries={history}
                     onSelect={handleSelectHistory}
+                    onDelete={handleDeleteHistoryEntry}
                     onClear={handleClearHistory}
                   />
                 </TabsContent>

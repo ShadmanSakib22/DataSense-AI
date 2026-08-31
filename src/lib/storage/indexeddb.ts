@@ -101,6 +101,11 @@ export async function loadQueryHistory(datasetId: string) {
   return db.getAllFromIndex('queryHistory', 'by-dataset', datasetId);
 }
 
+export async function deleteQueryHistoryEntry(id: number): Promise<void> {
+  const db = await getDb();
+  await db.delete('queryHistory', id);
+}
+
 export async function clearQueryHistory(datasetId: string): Promise<void> {
   const db = await getDb();
   const tx = db.transaction('queryHistory', 'readwrite');

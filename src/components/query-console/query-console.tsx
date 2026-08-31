@@ -11,7 +11,6 @@ import {
   Shield,
   ShieldAlert,
   AlertTriangle,
-  Plus,
   Copy,
   Check,
 } from "lucide-react";
@@ -20,25 +19,25 @@ import type { GuardrailVerdict } from "@/lib/db-engine/types";
 
 interface QueryConsoleProps {
   onSubmit: (question: string) => void;
-  onNewChat: () => void;
   isLoading: boolean;
   generatedSql: string | null;
   verdict: GuardrailVerdict | null;
   resultColumns: string[];
   resultRows: unknown[][];
-  onRunQuery: () => void;
+  question?: string;
+  llmResponse?: string | null;
   headerActions?: React.ReactNode;
 }
 
 export function QueryConsole({
   onSubmit,
-  onNewChat,
   isLoading,
   generatedSql,
   verdict,
   resultColumns,
   resultRows,
-  onRunQuery,
+  question: displayQuestion,
+  llmResponse,
   headerActions,
 }: QueryConsoleProps) {
   const [question, setQuestion] = useState("");
@@ -63,8 +62,6 @@ export function QueryConsole({
     [question, onSubmit],
   );
 
-  const hasResult = generatedSql !== null;
-
   return (
     <div className="space-y-4">
       <div className="rounded-xl border bg-card/50 p-4">
@@ -74,7 +71,7 @@ export function QueryConsole({
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask a question about your data..."
             className="min-h-[80px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-            disabled={hasResult || isLoading}
+            disabled={isLoading}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -84,38 +81,49 @@ export function QueryConsole({
           />
           <div className="flex items-center justify-between gap-2 border-t pt-3">
             <div className="flex items-center gap-1">{headerActions}</div>
-            {!hasResult ? (
-              <div className="border border-primary/50 border-dashed p-1">
-                <Button
-                  type="submit"
-                  disabled={isLoading || !question.trim()}
-                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {isLoading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="size-4" />
-                  )}
-                  {isLoading ? "Thinking..." : "Query"}
-                </Button>
-              </div>
-            ) : (
+            <div className="border border-primary/50 border-dashed p-1">
               <Button
-                type="button"
-                onClick={onNewChat}
-                variant="outline"
-                className="gap-2"
+                type="submit"
+                disabled={isLoading || !question.trim()}
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <Plus className="size-4" />
-                New Query
+                {isLoading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {isLoading ? "Thinking..." : "Query"}
               </Button>
-            )}
+            </div>
           </div>
         </form>
       </div>
 
+      {llmResponse && !generatedSql && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-semibold">Question</h4>
+          </div>
+          <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+            <span className="font-semibold text-primary">Q.</span> {displayQuestion}
+          </pre>
+          <Alert variant="default" className="py-2">
+            <AlertTriangle className="size-4" />
+            <AlertDescription className="text-xs whitespace-pre-wrap">
+              {llmResponse}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {generatedSql && (
         <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-semibold">Question</h4>
+          </div>
+          <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+            <span className="font-semibold text-primary">Q.</span> {displayQuestion}
+          </pre>
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold">Generated SQL</h4>
             {verdict?.safe ? (
@@ -168,18 +176,6 @@ export function QueryConsole({
                 </Alert>
               ))}
             </div>
-          )}
-
-          {verdict?.safe && (
-            <Button
-              onClick={onRunQuery}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Sparkles className="size-3" />
-              Run Query
-            </Button>
           )}
         </div>
       )}

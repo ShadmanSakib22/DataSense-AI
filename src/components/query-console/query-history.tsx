@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, RotateCcw, Trash2 } from 'lucide-react';
+import { Clock, RotateCcw, Trash2, X } from 'lucide-react';
 import type { GuardrailVerdict } from '@/lib/db-engine/types';
 
 interface HistoryEntry {
@@ -14,11 +14,13 @@ interface HistoryEntry {
 
 interface QueryHistoryProps {
   entries: HistoryEntry[];
-  onSelect: (sql: string) => void;
+  onSelect: (question: string, sql: string) => void;
+  onDelete?: (id: number) => void;
   onClear?: () => void;
 }
 
-export function QueryHistory({ entries, onSelect, onClear }: QueryHistoryProps) {
+export function QueryHistory({ entries, onSelect, onDelete, onClear }: QueryHistoryProps) {
+  const sortedEntries = [...entries].reverse();
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -42,17 +44,27 @@ export function QueryHistory({ entries, onSelect, onClear }: QueryHistoryProps) 
         <p className="text-xs text-muted-foreground">No queries yet.</p>
       ) : (
         <div className="space-y-1">
-          {entries.map(entry => (
-            <button
+          {sortedEntries.map(entry => (
+            <div
               key={entry.id}
-              onClick={() => onSelect(entry.sql)}
-              className="flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-muted/30"
+              className="group flex items-start gap-2 rounded-md px-3 py-2 text-xs transition-colors hover:bg-muted/30"
             >
-              <RotateCcw className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
+              <button
+                onClick={() => onSelect(entry.question, entry.sql)}
+                className="flex min-w-0 flex-1 items-start gap-2 text-left"
+              >
+                <RotateCcw className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
                 <p className="truncate">{entry.question}</p>
-              </div>
-            </button>
+              </button>
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(entry.id)}
+                  className="shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                >
+                  <X className="size-3" />
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
