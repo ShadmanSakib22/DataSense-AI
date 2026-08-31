@@ -96,7 +96,7 @@ export function FileUpload({ onFileSelected, disabled }: FileUploadProps) {
             />
           </label>
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-center text-muted-foreground">
           CSV, Excel (.xlsx), SQLite (.db/.sqlite), or SQL dump — up to{" "}
           {MAX_SIZE_MB}MB
         </p>

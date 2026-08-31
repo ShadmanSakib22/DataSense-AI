@@ -40,7 +40,7 @@ export default function Home() {
                 <Button asChild size="lg" className="gap-2 px-8">
                   <Link href="/workspace">
                     <Upload className="size-4" />
-                    Upload Data
+                    Get started
                     <ArrowUpRight className="size-4" />
                   </Link>
                 </Button>

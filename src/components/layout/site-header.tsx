@@ -48,12 +48,12 @@ const header = () => {
                   variant="outline"
                   className="border border-primary/50! text-primary hover:text-primary/35 hover:border-primary/15!"
                 >
-                  <Link href="/upload">
+                  <Link href="/workspace">
                     <Play />
                   </Link>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Upload Data</TooltipContent>
+              <TooltipContent>Workspace</TooltipContent>
             </Tooltip>
           </div>
         </TooltipProvider>
