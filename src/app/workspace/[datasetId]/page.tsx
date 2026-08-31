@@ -135,7 +135,7 @@ export default function WorkspacePage() {
 
   const handleDeleteHistoryEntry = useCallback(async (id: number) => {
     await deleteQueryHistoryEntry(id);
-    setHistory(prev => prev.filter(entry => entry.id !== id));
+    setHistory((prev) => prev.filter((entry) => entry.id !== id));
   }, []);
 
   const handleDeleteDataset = useCallback(async () => {
@@ -204,7 +204,10 @@ export default function WorkspacePage() {
             setResultColumns(payload.columns);
             setResultRows(payload.rows);
             executedRowCount = payload.rows.length;
-            const { eligible, suggested } = getEligibleChartTypes(payload.columns, payload.rows);
+            const { eligible, suggested } = getEligibleChartTypes(
+              payload.columns,
+              payload.rows,
+            );
             setEligibleTypes(eligible);
             setChartType(suggested);
           }
@@ -234,42 +237,48 @@ export default function WorkspacePage() {
     [llmProvider, schema, datasetId],
   );
 
-  const handleSelectHistory = useCallback(async (question: string, sql: string) => {
-    setIsLoading(true);
-    setLastQuestion(question);
-    setGeneratedSql(sql);
-    setResultColumns([]);
-    setResultRows([]);
+  const handleSelectHistory = useCallback(
+    async (question: string, sql: string) => {
+      setIsLoading(true);
+      setLastQuestion(question);
+      setGeneratedSql(sql);
+      setResultColumns([]);
+      setResultRows([]);
 
-    try {
-      const v = validateSql(sql, schema);
-      setVerdict(v);
+      try {
+        const v = validateSql(sql, schema);
+        setVerdict(v);
 
-      if (v.safe) {
-        const result = await sendMessage("exec", { sql: v.sanitizedSql });
-        if (result.type === "result") {
-          const payload = result.payload as {
-            columns: string[];
-            rows: unknown[][];
-            rowCount: number;
-          };
-          setResultColumns(payload.columns);
-          setResultRows(payload.rows);
-          const { eligible, suggested } = getEligibleChartTypes(payload.columns, payload.rows);
-          setEligibleTypes(eligible);
-          setChartType(suggested);
+        if (v.safe) {
+          const result = await sendMessage("exec", { sql: v.sanitizedSql });
+          if (result.type === "result") {
+            const payload = result.payload as {
+              columns: string[];
+              rows: unknown[][];
+              rowCount: number;
+            };
+            setResultColumns(payload.columns);
+            setResultRows(payload.rows);
+            const { eligible, suggested } = getEligibleChartTypes(
+              payload.columns,
+              payload.rows,
+            );
+            setEligibleTypes(eligible);
+            setChartType(suggested);
+          }
         }
+      } catch (err) {
+        setVerdict({
+          safe: false,
+          reasons: [`Error: ${String(err)}`],
+          sanitizedSql: "",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      setVerdict({
-        safe: false,
-        reasons: [`Error: ${String(err)}`],
-        sanitizedSql: "",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [schema]);
+    },
+    [schema],
+  );
 
   const chartData = prepareChartData(resultColumns, resultRows, chartType);
 
@@ -293,6 +302,7 @@ export default function WorkspacePage() {
             resultRows={resultRows}
             question={lastQuestion}
             llmResponse={llmResponse}
+            activeProvider={activeProvider}
             headerActions={
               <>
                 <Tooltip>
@@ -301,12 +311,12 @@ export default function WorkspacePage() {
                       variant="ghost"
                       size="icon"
                       className="size-9 text-muted-foreground hover:text-foreground"
-                      onClick={() => setAiOpen(true)}
+                      onClick={() => setDataOpen(true)}
                     >
-                      <Brain className="size-4" />
+                      <History className="size-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>AI & API Key</TooltipContent>
+                  <TooltipContent>History & Data</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -327,12 +337,12 @@ export default function WorkspacePage() {
                       variant="ghost"
                       size="icon"
                       className="size-9 text-muted-foreground hover:text-foreground"
-                      onClick={() => setDataOpen(true)}
+                      onClick={() => setAiOpen(true)}
                     >
-                      <History className="size-4" />
+                      <Brain className="size-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>History & Data</TooltipContent>
+                  <TooltipContent>AI & API Key</TooltipContent>
                 </Tooltip>
               </>
             }
@@ -342,22 +352,45 @@ export default function WorkspacePage() {
             <div className="space-y-4 rounded-xl border bg-card/50 p-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Visualization</h3>
-                <ChartTypePicker value={chartType} eligibleTypes={eligibleTypes} onChange={setChartType} />
+                <ChartTypePicker
+                  value={chartType}
+                  eligibleTypes={eligibleTypes}
+                  onChange={setChartType}
+                />
               </div>
-              {chartType === 'bar' && (
-                <ChartBar data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              {chartType === "bar" && (
+                <ChartBar
+                  data={chartData}
+                  xKey={resultColumns[0]}
+                  yKeys={resultColumns.slice(1)}
+                  config={chartConfig}
+                />
               )}
-              {chartType === 'line' && (
-                <ChartLine data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              {chartType === "line" && (
+                <ChartLine
+                  data={chartData}
+                  xKey={resultColumns[0]}
+                  yKeys={resultColumns.slice(1)}
+                  config={chartConfig}
+                />
               )}
-              {chartType === 'area' && (
-                <ChartArea data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              {chartType === "area" && (
+                <ChartArea
+                  data={chartData}
+                  xKey={resultColumns[0]}
+                  yKeys={resultColumns.slice(1)}
+                  config={chartConfig}
+                />
               )}
-              {chartType === 'pie' && (
+              {chartType === "pie" && (
                 <ChartPie data={chartData} config={chartConfig} />
               )}
-              {chartType === 'radar' && (
-                <ChartRadar data={chartData} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              {chartType === "radar" && (
+                <ChartRadar
+                  data={chartData}
+                  yKeys={resultColumns.slice(1)}
+                  config={chartConfig}
+                />
               )}
             </div>
           )}
@@ -366,10 +399,7 @@ export default function WorkspacePage() {
 
       {/* AI / API Key modal */}
       <Sheet open={aiOpen} onOpenChange={setAiOpen}>
-        <SheetContent
-          className="w-full lg:w-1/2 p-0"
-          showCloseButton={false}
-        >
+        <SheetContent className="w-full lg:w-1/2 p-0" showCloseButton={false}>
           <SheetHeader className="border-b px-6 py-4">
             <SheetTitle>AI & API Key</SheetTitle>
           </SheetHeader>
@@ -387,10 +417,7 @@ export default function WorkspacePage() {
 
       {/* Schema / Table details modal */}
       <Sheet open={schemaOpen} onOpenChange={setSchemaOpen}>
-        <SheetContent
-          className="w-full lg:w-1/2 p-0"
-          showCloseButton={false}
-        >
+        <SheetContent className="w-full lg:w-1/2 p-0" showCloseButton={false}>
           <SheetHeader className="border-b px-6 py-4">
             <SheetTitle>Table details</SheetTitle>
           </SheetHeader>

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ResultTable } from "./result-table";
 import type { GuardrailVerdict } from "@/lib/db-engine/types";
+import type { LLMProviderName } from "@/lib/llm/types";
 
 interface QueryConsoleProps {
   onSubmit: (question: string) => void;
@@ -26,6 +27,7 @@ interface QueryConsoleProps {
   resultRows: unknown[][];
   question?: string;
   llmResponse?: string | null;
+  activeProvider?: LLMProviderName | null;
   headerActions?: React.ReactNode;
 }
 
@@ -38,6 +40,7 @@ export function QueryConsole({
   resultRows,
   question: displayQuestion,
   llmResponse,
+  activeProvider,
   headerActions,
 }: QueryConsoleProps) {
   const [question, setQuestion] = useState("");
@@ -80,7 +83,16 @@ export function QueryConsole({
             }}
           />
           <div className="flex items-center justify-between gap-2 border-t pt-3">
-            <div className="flex items-center gap-1">{headerActions}</div>
+            <div className="flex gap-1 items-center">
+              {headerActions}
+              <div className="text-xs text-primary">
+                {activeProvider
+                  ? activeProvider.charAt(0).toUpperCase() +
+                    activeProvider.slice(1)
+                  : "No agent"}
+              </div>
+            </div>
+
             <div className="border border-primary/50 border-dashed p-1">
               <Button
                 type="submit"
@@ -97,6 +109,14 @@ export function QueryConsole({
             </div>
           </div>
         </form>
+        {!activeProvider && (
+          <Alert variant="destructive" className="mt-3 py-2">
+            <AlertTriangle className="size-4" />
+            <AlertDescription className="text-xs">
+              No API key set. Click the brain icon to configure an LLM provider.
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       {llmResponse && !generatedSql && (
@@ -105,7 +125,8 @@ export function QueryConsole({
             <h4 className="text-sm font-semibold">Question</h4>
           </div>
           <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
-            <span className="font-semibold text-primary">Q.</span> {displayQuestion}
+            <span className="font-semibold text-primary">Q.</span>{" "}
+            {displayQuestion}
           </pre>
           <Alert variant="default" className="py-2">
             <AlertTriangle className="size-4" />
@@ -122,7 +143,8 @@ export function QueryConsole({
             <h4 className="text-sm font-semibold">Question</h4>
           </div>
           <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
-            <span className="font-semibold text-primary">Q.</span> {displayQuestion}
+            <span className="font-semibold text-primary">Q.</span>{" "}
+            {displayQuestion}
           </pre>
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold">Generated SQL</h4>
@@ -146,7 +168,11 @@ export function QueryConsole({
               className="ml-auto size-7 text-muted-foreground hover:text-foreground"
               onClick={handleCopySql}
             >
-              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+              {copied ? (
+                <Check className="size-3.5" />
+              ) : (
+                <Copy className="size-3.5" />
+              )}
             </Button>
           </div>
           <pre className="overflow-auto rounded-lg border bg-muted/30 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
