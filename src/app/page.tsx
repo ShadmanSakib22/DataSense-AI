@@ -1,26 +1,115 @@
+"use client";
+
+import { useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { FileUpload } from "@/components/upload/file-upload";
+import { UploadProgress } from "@/components/upload/upload-progress";
+import { sendMessage, initWorker } from "@/lib/db-engine/sqljs-manager";
+import { parseCsvFile } from "@/lib/db-engine/import-csv";
+import { parseXlsxFile } from "@/lib/db-engine/import-xlsx";
+import { saveDataset } from "@/lib/storage/indexeddb";
 import {
-  Upload,
   Shield,
   Database,
   Brain,
   Zap,
   Lock,
-  ArrowUpRight,
   Star,
 } from "lucide-react";
 
 export default function Home() {
+  const router = useRouter();
+  const [status, setStatus] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number | undefined>();
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+
+      try {
+        initWorker();
+        setStatus("Initializing database engine...");
+        setProgress(10);
+
+        if (ext === "csv") {
+          setStatus("Parsing CSV file...");
+          setProgress(30);
+          const result = await parseCsvFile(file);
+
+          setStatus(`Loading ${result.tableName} into database...`);
+          setProgress(60);
+          await sendMessage("import-csv", result);
+        } else if (ext === "xlsx" || ext === "xls") {
+          setStatus("Parsing Excel file...");
+          setProgress(30);
+          const results = await parseXlsxFile(file);
+
+          for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            setStatus(
+              `Loading sheet ${i + 1}/${results.length}: ${r.tableName}...`
+            );
+            setProgress(30 + Math.floor((i / results.length) * 50));
+            await sendMessage("import-xlsx", r);
+          }
+        } else if (ext === "db" || ext === "sqlite") {
+          setStatus("Reading database file...");
+          setProgress(30);
+          const buffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(buffer);
+
+          setStatus("Loading SQLite database...");
+          setProgress(60);
+          await sendMessage("init-bytes", { bytes });
+        } else if (ext === "sql") {
+          setStatus("Reading SQL dump...");
+          setProgress(30);
+          const sql = await file.text();
+
+          setStatus("Executing SQL dump...");
+          setProgress(60);
+          await sendMessage("init-sql", { sql });
+        } else {
+          throw new Error(`Unsupported file type: .${ext}`);
+        }
+
+        setStatus("Retrieving schema...");
+        setProgress(80);
+        const schemaResponse = await sendMessage("schema", null);
+
+        setStatus("Saving to IndexedDB...");
+        setProgress(90);
+        const exportResponse = await sendMessage("export", null);
+        const datasetId = crypto.randomUUID();
+
+        if (exportResponse.type === "exported") {
+          const { bytes } = exportResponse.payload as { bytes: Uint8Array };
+          await saveDataset(datasetId, file.name, bytes, schemaResponse.payload);
+        }
+
+        setProgress(100);
+        setStatus("Done! Redirecting...");
+
+        router.push(`/workspace/${datasetId}`);
+      } catch (err) {
+        setStatus(`Error: ${String(err)}`);
+        setProgress(undefined);
+      }
+    },
+    [router]
+  );
+
   return (
     <>
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
         <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            {/* Left — Copy */}
+            {/* Left — Copy + Upload */}
             <div className="flex flex-col items-start text-left">
               <div className="mb-6 inline-flex items-center rounded-full border border-primary/10 bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground">
                 Runs entirely in your browser
@@ -36,18 +125,15 @@ export default function Home() {
                 Upload a CSV, Excel file, or SQLite database. Ask questions in
                 plain English. Get interactive charts — instantly.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Button asChild size="lg" className="gap-2 px-8">
-                  <Link href="/upload">
-                    <Upload className="size-4" />
-                    Upload Data
-                    <ArrowUpRight className="size-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="#features">Learn more</Link>
-                </Button>
+
+              <div className="w-full max-w-lg">
+                {status ? (
+                  <UploadProgress status={status} progress={progress} />
+                ) : (
+                  <FileUpload onFileSelected={handleFile} />
+                )}
               </div>
+
               <div className="mt-8 flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Star className="size-3.5 fill-primary text-primary" />
@@ -61,7 +147,7 @@ export default function Home() {
             </div>
 
             {/* Right — Mockup */}
-            <div className="relative block">
+            <div className="relative hidden lg:block">
               {/* Stacked cards behind */}
               <div className="absolute -bottom-3 -left-3 -right-3 -top-3 rounded-2xl border border-border/60 bg-muted/30" />
               <div className="absolute -bottom-6 -left-6 -right-6 -top-6 rounded-2xl border border-border/40 bg-muted/20" />
@@ -87,7 +173,8 @@ export default function Home() {
                 <div className="mb-4 rounded-lg bg-muted/30 px-4 py-3">
                   <p className="font-mono text-xs leading-relaxed">
                     <span className="text-muted-foreground">SELECT</span>{" "}
-                    category, <span className="text-muted-foreground">SUM</span>
+                    category,{" "}
+                    <span className="text-muted-foreground">SUM</span>
                     (revenue) <span className="text-muted-foreground">
                       AS
                     </span>{" "}
