@@ -5,6 +5,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart';
 
@@ -19,6 +21,7 @@ export function ChartPie({ data, config, height = 300 }: ChartPieProps) {
     <ChartContainer config={config} className="w-full" style={{ height }}>
       <PieChart>
         <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartLegend content={<ChartLegendContent />} />
         <Pie data={data} dataKey="value" nameKey="name" fill="var(--color-1)" />
       </PieChart>
     </ChartContainer>

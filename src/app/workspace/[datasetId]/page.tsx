@@ -22,12 +22,16 @@ import { buildSchemaGroundedPrompt } from "@/lib/llm/prompt-builder";
 import { extractSql } from "@/lib/llm/sql-extractor";
 import { validateSql } from "sql-guardrails";
 import {
-  suggestChartType,
   prepareChartData,
+  getEligibleChartTypes,
   type ChartType,
 } from "@/lib/chart-defaults";
 import { ChartTypePicker } from "@/components/charts/chart-type-picker";
 import { ChartBar } from "@/components/charts/chart-bar";
+import { ChartLine } from "@/components/charts/chart-line";
+import { ChartArea } from "@/components/charts/chart-area";
+import { ChartPie } from "@/components/charts/chart-pie";
+import { ChartRadar } from "@/components/charts/chart-radar";
 import {
   Sheet,
   SheetContent,
@@ -74,6 +78,7 @@ export default function WorkspacePage() {
     null,
   );
   const [chartType, setChartType] = useState<ChartType>("bar");
+  const [eligibleTypes, setEligibleTypes] = useState<ChartType[]>(["bar"]);
   const [aiOpen, setAiOpen] = useState(false);
   const [schemaOpen, setSchemaOpen] = useState(false);
   const [dataOpen, setDataOpen] = useState(false);
@@ -199,7 +204,9 @@ export default function WorkspacePage() {
             setResultColumns(payload.columns);
             setResultRows(payload.rows);
             executedRowCount = payload.rows.length;
-            setChartType(suggestChartType(payload.columns, payload.rows));
+            const { eligible, suggested } = getEligibleChartTypes(payload.columns, payload.rows);
+            setEligibleTypes(eligible);
+            setChartType(suggested);
           }
         }
 
@@ -248,7 +255,9 @@ export default function WorkspacePage() {
           };
           setResultColumns(payload.columns);
           setResultRows(payload.rows);
-          setChartType(suggestChartType(payload.columns, payload.rows));
+          const { eligible, suggested } = getEligibleChartTypes(payload.columns, payload.rows);
+          setEligibleTypes(eligible);
+          setChartType(suggested);
         }
       }
     } catch (err) {
@@ -333,14 +342,23 @@ export default function WorkspacePage() {
             <div className="space-y-4 rounded-xl border bg-card/50 p-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Visualization</h3>
-                <ChartTypePicker value={chartType} onChange={setChartType} />
+                <ChartTypePicker value={chartType} eligibleTypes={eligibleTypes} onChange={setChartType} />
               </div>
-              <ChartBar
-                data={chartData}
-                xKey={resultColumns[0]}
-                yKeys={resultColumns.slice(1)}
-                config={chartConfig}
-              />
+              {chartType === 'bar' && (
+                <ChartBar data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              )}
+              {chartType === 'line' && (
+                <ChartLine data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              )}
+              {chartType === 'area' && (
+                <ChartArea data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              )}
+              {chartType === 'pie' && (
+                <ChartPie data={chartData} config={chartConfig} />
+              )}
+              {chartType === 'radar' && (
+                <ChartRadar data={chartData} yKeys={resultColumns.slice(1)} config={chartConfig} />
+              )}
             </div>
           )}
         </div>

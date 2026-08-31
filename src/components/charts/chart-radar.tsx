@@ -5,6 +5,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
   type ChartConfig,
 } from '@/components/ui/chart';
 
@@ -22,6 +24,7 @@ export function ChartRadar({ data, yKeys, config, height = 300 }: ChartRadarProp
         <PolarGrid />
         <PolarAngleAxis dataKey="subject" />
         <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartLegend content={<ChartLegendContent />} />
         {yKeys.map((key, i) => (
           <Radar key={key} dataKey={key} stroke={`var(--color-${i + 1})`} fill={`var(--color-${i + 1})`} fillOpacity={0.2} />
         ))}
