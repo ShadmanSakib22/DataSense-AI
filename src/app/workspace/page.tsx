@@ -10,8 +10,8 @@ import { UploadProgress } from '@/components/upload/upload-progress';
 import { sendMessage, initWorker } from '@/lib/db-engine/sqljs-manager';
 import { parseCsvFile } from '@/lib/db-engine/import-csv';
 import { parseXlsxFile } from '@/lib/db-engine/import-xlsx';
-import { saveDataset, listDatasets, deleteDataset } from '@/lib/storage/indexeddb';
-import { AlertTriangle, Database, Trash2 } from 'lucide-react';
+import { saveDataset, listDatasets, deleteDataset, clearAllData } from '@/lib/storage/indexeddb';
+import { AlertTriangle, Database, Trash2, Trash } from 'lucide-react';
 
 interface Dataset {
   id: string;
@@ -111,6 +111,13 @@ export default function WorkspaceIndexPage() {
     setDatasets(prev => prev.filter(d => d.id !== id));
   }, []);
 
+  const handleClearAll = useCallback(async () => {
+    if (confirm('Delete all sessions? This cannot be undone.')) {
+      await clearAllData();
+      setDatasets([]);
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center p-6">
@@ -124,7 +131,18 @@ export default function WorkspaceIndexPage() {
 
           {datasets.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">Existing Sessions</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground">Existing Sessions</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-destructive"
+                  onClick={handleClearAll}
+                >
+                  <Trash className="size-3" />
+                  Clear All
+                </Button>
+              </div>
               <div className="space-y-2">
                 {datasets.map(dataset => (
                   <Card key={dataset.id} className="cursor-pointer transition-colors hover:border-primary/50">
