@@ -23,28 +23,16 @@ DataSense is a privacy-first, browser-based data analysis tool. Upload a CSV, Ex
 
 ## How It Works
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Your Browser                              │
-│                                                              │
-│  1. Upload file ──→ Parse (CSV/Excel) or load (SQLite)      │
-│  2. Store in ─────→ In-memory SQLite (sql.js + Web Worker)  │
-│  3. Ask question ──→ LLM generates SQL (direct API call)    │
-│  4. Validate ─────→ AST guardrail engine checks safety      │
-│  5. Execute ──────→ Run SQL against in-browser SQLite        │
-│  6. Display ──────→ Interactive charts + tables              │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
-
-1. **Upload** — Select a CSV, Excel, SQLite, or SQL file
-2. **Parse** — Files are parsed entirely in the browser (PapaParse for CSV, SheetJS for Excel, sql.js for SQLite)
-3. **Store** — Data is loaded into an in-browser SQLite database running in a Web Worker
-4. **Ask** — Type a natural language question (e.g., "What are my top 10 albums by streams?")
-5. **Generate** — Your LLM provider generates a SQL query from the schema
-6. **Validate** — The AST guardrail engine checks the query for safety (no writes, no DDL, valid tables/columns)
-7. **Execute** — The validated query runs against your in-browser SQLite database
-8. **Visualize** — Results display as interactive charts and tables
+| Step | Action | Description |
+|------|--------|-------------|
+| 1 | **Upload** | Select a CSV, Excel, SQLite, or SQL file |
+| 2 | **Parse** | Files are parsed entirely in the browser (PapaParse for CSV, SheetJS for Excel, sql.js for SQLite) |
+| 3 | **Store** | Data is loaded into an in-browser SQLite database running in a Web Worker |
+| 4 | **Ask** | Type a natural language question (e.g., "What are my top 10 albums by streams?") |
+| 5 | **Generate** | Your LLM provider generates a SQL query from the schema |
+| 6 | **Validate** | The AST guardrail engine checks the query for safety (no writes, no DDL, valid tables/columns) |
+| 7 | **Execute** | The validated query runs against your in-browser SQLite database |
+| 8 | **Visualize** | Results display as interactive charts and tables |
 
 ---
 
