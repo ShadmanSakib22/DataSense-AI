@@ -235,6 +235,40 @@ export default function WorkspacePage() {
     }
   }, [verdict]);
 
+  const handleSelectHistory = useCallback(async (sql: string) => {
+    setIsLoading(true);
+    setGeneratedSql(sql);
+    setResultColumns([]);
+    setResultRows([]);
+
+    try {
+      const v = validateSql(sql, schema);
+      setVerdict(v);
+
+      if (v.safe) {
+        const result = await sendMessage("exec", { sql: v.sanitizedSql });
+        if (result.type === "result") {
+          const payload = result.payload as {
+            columns: string[];
+            rows: unknown[][];
+            rowCount: number;
+          };
+          setResultColumns(payload.columns);
+          setResultRows(payload.rows);
+          setChartType(suggestChartType(payload.columns, payload.rows));
+        }
+      }
+    } catch (err) {
+      setVerdict({
+        safe: false,
+        reasons: [`Error: ${String(err)}`],
+        sanitizedSql: "",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [schema]);
+
   const handleNewChat = useCallback(() => {
     setGeneratedSql(null);
     setVerdict(null);
@@ -386,14 +420,14 @@ export default function WorkspacePage() {
                     Data
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="history" className="mt-4">
+                <TabsContent value="history" className="mt-4 max-h-[60vh] overflow-y-auto">
                   <QueryHistory
                     entries={history}
-                    onSelect={() => {}}
+                    onSelect={handleSelectHistory}
                     onClear={handleClearHistory}
                   />
                 </TabsContent>
-                <TabsContent value="data" className="mt-4">
+                <TabsContent value="data" className="mt-4 max-h-[60vh] overflow-y-auto">
                   <div className="space-y-4">
                     <div className="rounded-md border p-4">
                       <h4 className="text-sm font-medium">Dataset Actions</h4>
