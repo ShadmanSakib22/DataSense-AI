@@ -1,6 +1,14 @@
 'use client';
 
 import { useMemo } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface ResultTableProps {
   columns: string[];
@@ -16,37 +24,39 @@ export function ResultTable({ columns, rows, maxRows = 1000 }: ResultTableProps)
   }
 
   return (
-    <div className="overflow-auto rounded-lg border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-muted/50">
-            {columns.map(col => (
-              <th key={col} className="whitespace-nowrap px-4 py-2 text-left font-mono text-xs font-medium">
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {displayRows.map((row, i) => (
-            <tr key={i} className="border-b border-border/50">
-              {row.map((cell, j) => (
-                <td key={j} className="whitespace-nowrap px-4 py-2 font-mono text-xs">
-                  {cell === null ? (
-                    <span className="text-muted-foreground italic">NULL</span>
-                  ) : typeof cell === 'number' ? (
-                    cell.toLocaleString()
-                  ) : (
-                    String(cell)
-                  )}
-                </td>
+    <div className="space-y-2">
+      <div className="overflow-auto rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {columns.map(col => (
+                <TableHead key={col} className="font-mono text-xs">
+                  {col}
+                </TableHead>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {displayRows.map((row, i) => (
+              <TableRow key={i}>
+                {row.map((cell, j) => (
+                  <TableCell key={j} className="font-mono text-xs">
+                    {cell === null ? (
+                      <span className="text-muted-foreground italic">NULL</span>
+                    ) : typeof cell === 'number' ? (
+                      cell.toLocaleString()
+                    ) : (
+                      String(cell)
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       {rows.length > maxRows && (
-        <p className="px-4 py-2 text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Showing {maxRows} of {rows.length.toLocaleString()} rows
         </p>
       )}

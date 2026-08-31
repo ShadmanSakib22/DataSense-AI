@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface UploadProgressProps {
   status: string;
@@ -9,17 +10,12 @@ interface UploadProgressProps {
 
 export function UploadProgress({ status, progress }: UploadProgressProps) {
   return (
-    <div className="flex flex-col items-center gap-4 p-8">
+    <div className="flex flex-col items-center gap-6 py-8">
       <Loader2 className="size-8 animate-spin text-primary" />
-      <div className="text-center">
+      <div className="w-full space-y-3 text-center">
         <p className="font-medium">{status}</p>
         {progress !== undefined && (
-          <div className="mt-2 h-2 w-64 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <Progress value={progress} className="h-2" />
         )}
       </div>
     </div>

@@ -16,6 +16,12 @@ import { validateSql } from 'sql-guardrails';
 import { suggestChartType, prepareChartData, type ChartType } from '@/lib/chart-defaults';
 import { ChartTypePicker } from '@/components/charts/chart-type-picker';
 import { ChartBar } from '@/components/charts/chart-bar';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
+import { Brain, Database } from 'lucide-react';
 import type { SchemaInfo, GuardrailVerdict } from '@/lib/db-engine/types';
 import type { LLMProvider, LLMProviderName } from '@/lib/llm/types';
 import type { ChartConfig } from '@/components/ui/chart';
@@ -34,6 +40,8 @@ export default function WorkspacePage() {
   const [llmProvider, setLlmProvider] = useState<LLMProvider | null>(null);
   const [activeProvider, setActiveProvider] = useState<LLMProviderName | null>(null);
   const [chartType, setChartType] = useState<ChartType>('bar');
+  const [aiOpen, setAiOpen] = useState(false);
+  const [schemaOpen, setSchemaOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -146,37 +154,90 @@ export default function WorkspacePage() {
   }, {} as ChartConfig);
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-80 shrink-0 border-r p-4 space-y-6 overflow-y-auto">
-        <h2 className="text-lg font-semibold">Workspace</h2>
-        <SchemaExplorer schema={schema} />
-        <BYOKPanel onKeySet={handleKeySet} onKeyClear={handleKeyClear} activeProvider={activeProvider} />
-        <QueryHistory entries={history} onSelect={(sql) => {}} />
-      </aside>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-1 overflow-y-auto p-6">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <QueryConsole
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            generatedSql={generatedSql}
+            verdict={verdict}
+            resultColumns={resultColumns}
+            resultRows={resultRows}
+            onRunQuery={handleRunQuery}
+            headerActions={
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground"
+                      onClick={() => setAiOpen(true)}
+                    >
+                      <Brain className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>AI & API Key</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground"
+                      onClick={() => setSchemaOpen(true)}
+                    >
+                      <Database className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Table details</TooltipContent>
+                </Tooltip>
+              </>
+            }
+          />
 
-      <main className="flex-1 p-6 space-y-6 overflow-y-auto">
-        <h1 className="text-2xl font-bold">DataSense AI</h1>
-
-        <QueryConsole
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-          generatedSql={generatedSql}
-          verdict={verdict}
-          resultColumns={resultColumns}
-          resultRows={resultRows}
-          onRunQuery={handleRunQuery}
-        />
-
-        {resultColumns.length > 0 && chartData.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Visualization</h3>
-              <ChartTypePicker value={chartType} onChange={setChartType} />
+          {resultColumns.length > 0 && chartData.length > 0 && (
+            <div className="space-y-4 rounded-xl border bg-card/50 p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Visualization</h3>
+                <ChartTypePicker value={chartType} onChange={setChartType} />
+              </div>
+              <ChartBar data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
             </div>
-            <ChartBar data={chartData} xKey={resultColumns[0]} yKeys={resultColumns.slice(1)} config={chartConfig} />
-          </div>
-        )}
+          )}
+        </div>
       </main>
+
+      {/* AI / API Key modal */}
+      <Sheet open={aiOpen} onOpenChange={setAiOpen}>
+        <SheetContent className="w-full sm:max-w-md p-0" showCloseButton={false}>
+          <SheetHeader className="border-b px-6 py-4">
+            <SheetTitle>AI & API Key</SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(100dvh-4rem)]">
+            <div className="space-y-6 p-6">
+              <BYOKPanel onKeySet={handleKeySet} onKeyClear={handleKeyClear} activeProvider={activeProvider} />
+              <Separator />
+              <QueryHistory entries={history} onSelect={() => {}} />
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
+      {/* Schema / Table details modal */}
+      <Sheet open={schemaOpen} onOpenChange={setSchemaOpen}>
+        <SheetContent className="w-full sm:max-w-md p-0" showCloseButton={false}>
+          <SheetHeader className="border-b px-6 py-4">
+            <SheetTitle>Table details</SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(100dvh-4rem)]">
+            <div className="p-6">
+              <SchemaExplorer schema={schema} />
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

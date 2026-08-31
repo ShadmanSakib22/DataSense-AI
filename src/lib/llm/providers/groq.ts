@@ -3,7 +3,6 @@ import type { LLMProvider, LLMMessage, LLMCompletionOptions } from '../types';
 export class GroqProvider implements LLMProvider {
   name = 'groq';
   private apiKey: string;
-  private baseUrl = 'https://api.groq.com/openai/v1';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -12,17 +11,19 @@ export class GroqProvider implements LLMProvider {
   async chat(messages: LLMMessage[], options?: LLMCompletionOptions): Promise<string> {
     const model = options?.model || 'llama-3.3-70b-versatile';
 
-    const res = await fetch(`${this.baseUrl}/chat/completions`, {
+    const res = await fetch('/api/proxy', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model,
-        messages,
-        temperature: options?.temperature ?? 0.2,
-        max_tokens: options?.maxTokens ?? 4096,
+        provider: 'groq',
+        apiKey: this.apiKey,
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        payload: {
+          model,
+          messages,
+          temperature: options?.temperature ?? 0.2,
+          max_tokens: options?.maxTokens ?? 4096,
+        },
       }),
     });
 
@@ -38,18 +39,20 @@ export class GroqProvider implements LLMProvider {
   async *streamChat(messages: LLMMessage[], options?: LLMCompletionOptions): AsyncGenerator<string> {
     const model = options?.model || 'llama-3.3-70b-versatile';
 
-    const res = await fetch(`${this.baseUrl}/chat/completions`, {
+    const res = await fetch('/api/proxy', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model,
-        messages,
-        temperature: options?.temperature ?? 0.2,
-        max_tokens: options?.maxTokens ?? 4096,
-        stream: true,
+        provider: 'groq',
+        apiKey: this.apiKey,
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        payload: {
+          model,
+          messages,
+          temperature: options?.temperature ?? 0.2,
+          max_tokens: options?.maxTokens ?? 4096,
+          stream: true,
+        },
       }),
     });
 

@@ -3,7 +3,6 @@ import type { LLMProvider, LLMMessage, LLMCompletionOptions } from '../types';
 export class GeminiProvider implements LLMProvider {
   name = 'gemini';
   private apiKey: string;
-  private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -20,7 +19,7 @@ export class GeminiProvider implements LLMProvider {
 
     const systemInstruction = messages.find(m => m.role === 'system');
 
-    const body: Record<string, unknown> = {
+    const payload: Record<string, unknown> = {
       contents,
       generationConfig: {
         temperature: options?.temperature ?? 0.2,
@@ -29,17 +28,19 @@ export class GeminiProvider implements LLMProvider {
     };
 
     if (systemInstruction) {
-      body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
+      payload.systemInstruction = { parts: [{ text: systemInstruction.content }] };
     }
 
-    const res = await fetch(
-      `${this.baseUrl}/models/${model}:generateContent?key=${this.apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }
-    );
+    const res = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'gemini',
+        apiKey: this.apiKey,
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`,
+        payload,
+      }),
+    });
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
@@ -61,7 +62,7 @@ export class GeminiProvider implements LLMProvider {
 
     const systemInstruction = messages.find(m => m.role === 'system');
 
-    const body: Record<string, unknown> = {
+    const payload: Record<string, unknown> = {
       contents,
       generationConfig: {
         temperature: options?.temperature ?? 0.2,
@@ -70,17 +71,19 @@ export class GeminiProvider implements LLMProvider {
     };
 
     if (systemInstruction) {
-      body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
+      payload.systemInstruction = { parts: [{ text: systemInstruction.content }] };
     }
 
-    const res = await fetch(
-      `${this.baseUrl}/models/${model}:streamGenerateContent?key=${this.apiKey}&alt=sse`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }
-    );
+    const res = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'gemini',
+        apiKey: this.apiKey,
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${this.apiKey}&alt=sse`,
+        payload,
+      }),
+    });
 
     if (!res.ok) {
       throw new Error(`Gemini API error: ${res.status}`);

@@ -1,8 +1,8 @@
 'use client';
 
 import { AreaChart, BarChart, LineChart, PieChart, Radar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { ChartType } from '@/lib/chart-defaults';
 
 const CHART_TYPES: { type: ChartType; label: string; icon: typeof BarChart }[] = [
@@ -20,19 +20,24 @@ interface ChartTypePickerProps {
 
 export function ChartTypePicker({ value, onChange }: ChartTypePickerProps) {
   return (
-    <div className="flex gap-1">
+    <ToggleGroup
+      type="single"
+      value={value}
+      onValueChange={(v) => { if (v) onChange(v as ChartType); }}
+      size="sm"
+    >
       {CHART_TYPES.map(({ type, label, icon: Icon }) => (
-        <Button
-          key={type}
-          variant={value === type ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => onChange(type)}
-          className={cn('gap-1.5', value === type && 'bg-primary text-primary-foreground')}
-        >
-          <Icon className="size-3.5" />
-          {label}
-        </Button>
+        <Tooltip key={type}>
+          <TooltipTrigger asChild>
+            <ToggleGroupItem value={type} aria-label={label}>
+              <Icon className="size-3.5" />
+            </ToggleGroupItem>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{label}</p>
+          </TooltipContent>
+        </Tooltip>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }

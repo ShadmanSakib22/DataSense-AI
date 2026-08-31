@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
 import { FileUpload } from '@/components/upload/file-upload';
 import { UploadProgress } from '@/components/upload/upload-progress';
 import { sendMessage, initWorker } from '@/lib/db-engine/sqljs-manager';
@@ -95,21 +96,25 @@ export default function UploadPage() {
   );
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center p-8">
-      <div className="w-full space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Upload your data</h1>
-          <p className="mt-1 text-muted-foreground">
-            Your file never leaves this browser tab.
-          </p>
-        </div>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex flex-1 flex-col items-center justify-center p-6">
+        <Card className="w-full max-w-xl">
+          <CardContent className="p-8">
+            <div className="mb-6 text-center">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight">Upload your data</h1>
+              <p className="text-sm text-muted-foreground">
+                Your file is parsed and stored entirely in your browser.
+              </p>
+            </div>
 
-        {status ? (
-          <UploadProgress status={status} progress={progress} />
-        ) : (
-          <FileUpload onFileSelected={handleFile} />
-        )}
-      </div>
+            {status ? (
+              <UploadProgress status={status} progress={progress} />
+            ) : (
+              <FileUpload onFileSelected={handleFile} />
+            )}
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }
