@@ -83,7 +83,7 @@ export function FileUpload({ onFileSelected, disabled }: FileUploadProps) {
         )}
       >
         <Upload className="mb-4 size-10 text-muted-foreground" />
-        <p className="mb-2 text-lg font-medium">
+        <p className="mb-2 text-lg font-medium text-center">
           Drop your file here, or{" "}
           <label className="cursor-pointer text-primary underline underline-offset-4 hover:text-primary/80">
             browse

@@ -93,7 +93,7 @@ export function QueryConsole({
               </div>
             </div>
 
-            <div className="border border-primary/50 border-dashed p-1">
+            <div className="border border-primary/50 border-dashed p-.5">
               <Button
                 type="submit"
                 disabled={isLoading || !question.trim()}
@@ -102,7 +102,7 @@ export function QueryConsole({
                 {isLoading ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Sparkles className="size-4" />
+                  <Sparkles className="hidden sm:inline size-4" />
                 )}
                 {isLoading ? "Thinking..." : "Query"}
               </Button>

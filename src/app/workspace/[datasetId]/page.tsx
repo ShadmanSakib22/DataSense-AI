@@ -443,15 +443,19 @@ export default function WorkspacePage() {
 
       {/* Schema / Table details modal */}
       <Sheet open={schemaOpen} onOpenChange={setSchemaOpen}>
-        <SheetContent className="w-full lg:w-1/2 p-0" showCloseButton={false}>
-          <SheetHeader className="border-b px-6 py-4">
+        <SheetContent
+          className="flex flex-col h-dvh w-full lg:w-1/2 p-0 overflow-hidden"
+          showCloseButton={false}
+        >
+          <SheetHeader className="border-b px-6 py-4 shrink-0">
             <SheetTitle>Table details</SheetTitle>
           </SheetHeader>
-          <ScrollArea className="h-[calc(100dvh-4rem)]">
-            <div className="p-6">
+
+          <div className="flex-1 min-h-0 w-full overflow-x-auto p-4">
+            <div className="w-max min-w-full">
               <SchemaExplorer schema={schema} />
             </div>
-          </ScrollArea>
+          </div>
         </SheetContent>
       </Sheet>
 

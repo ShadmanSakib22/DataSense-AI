@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, Key } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import type { TableSchema } from '@/lib/db-engine/types';
+import { useState } from "react";
+import { ChevronDown, ChevronRight, Key } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import type { TableSchema } from "@/lib/db-engine/types";
 
 interface TableCardProps {
   table: TableSchema;
@@ -39,12 +39,16 @@ export function TableCard({ table }: TableCardProps) {
               </tr>
             </thead>
             <tbody>
-              {table.columns.map(col => (
+              {table.columns.map((col) => (
                 <tr key={col.name} className="border-t border-border/30">
                   <td className="py-1 font-mono text-xs">{col.name}</td>
-                  <td className="py-1 text-xs text-muted-foreground">{col.type}</td>
+                  <td className="py-1 text-xs text-muted-foreground">
+                    {col.type}
+                  </td>
                   <td className="py-1 text-center">
-                    {col.pk ? <Key className="mx-auto size-3 text-amber-500" /> : null}
+                    {col.pk ? (
+                      <Key className="mx-auto size-3 text-amber-500" />
+                    ) : null}
                   </td>
                 </tr>
               ))}

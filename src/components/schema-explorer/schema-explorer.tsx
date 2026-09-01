@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Database } from 'lucide-react';
-import { TableCard } from './table-card';
-import { Badge } from '@/components/ui/badge';
-import type { SchemaInfo } from '@/lib/db-engine/types';
+import { Database } from "lucide-react";
+import { TableCard } from "./table-card";
+import { Badge } from "@/components/ui/badge";
+import type { SchemaInfo } from "@/lib/db-engine/types";
 
 interface SchemaExplorerProps {
   schema: SchemaInfo;
@@ -26,11 +26,11 @@ export function SchemaExplorer({ schema }: SchemaExplorerProps) {
           Schema
         </h3>
         <Badge variant="secondary" className="text-xs">
-          {schema.tables.length} table{schema.tables.length !== 1 ? 's' : ''}
+          {schema.tables.length} table{schema.tables.length !== 1 ? "s" : ""}
         </Badge>
       </div>
       <div className="space-y-2">
-        {schema.tables.map(table => (
+        {schema.tables.map((table) => (
           <TableCard key={table.name} table={table} />
         ))}
       </div>
