@@ -25,7 +25,7 @@ export default function Home() {
               <div className="mb-6 inline-flex items-center rounded-full border border-primary/10 bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground">
                 Runs entirely in your browser
               </div>
-              <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+              <h1 className="font-mono mb-6 text-3xl sm:text-4xl md:text-5xl tracking-tighter font-semibold">
                 Ask your data
                 <br />
                 a question.

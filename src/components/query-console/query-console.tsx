@@ -110,7 +110,7 @@ export function QueryConsole({
           </div>
         </form>
         {!activeProvider && (
-          <Alert variant="destructive" className="mt-3 py-2">
+          <Alert variant="destructive" className="mt-3 py-2 leading-0">
             <AlertTriangle className="size-4" />
             <AlertDescription className="text-xs">
               No API key set. Click the brain icon to configure an LLM provider.

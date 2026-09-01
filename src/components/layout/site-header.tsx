@@ -27,7 +27,7 @@ const header = () => {
                   asChild
                   size="icon"
                   variant="outline"
-                  className="border border-secondary/70! text-secondary hover:text-secondary/35 hover:border-secondary/35!"
+                  className="border border-foreground/60! text-foreground/60 hover:text-foreground/35 hover:border-foreground/35!"
                 >
                   <a
                     href="https://github.com/ShadmanSakib22/DataSense-AI"
