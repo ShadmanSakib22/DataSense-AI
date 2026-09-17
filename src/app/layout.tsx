@@ -5,6 +5,7 @@ import SiteHeader from "@/components/layout/site-header";
 import SiteFooter from "@/components/layout/site-footer";
 import { BackToTop } from "@/components/layout/back-to-top";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 const fontSans = Geist_Mono({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
           <BackToTop />
         </TooltipProvider>
       </body>
+     <Analytics />
     </html>
   );
 }
